@@ -9,18 +9,18 @@ class User(models.Model):
 
 class Team(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    members = models.ArrayReferenceField(to=User, on_delete=models.CASCADE)
+    members = models.JSONField(default=list)  # Lista de usernames
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Activity(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.CharField(max_length=150)  # username
     type = models.CharField(max_length=50)
     duration = models.IntegerField()  # minutos
     calories = models.IntegerField()
     date = models.DateTimeField()
 
 class Leaderboard(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    team = models.CharField(max_length=100)  # team name
     points = models.IntegerField()
 
 class Workout(models.Model):

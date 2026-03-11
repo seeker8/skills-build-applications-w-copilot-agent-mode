@@ -1,66 +1,38 @@
+
 from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
-from djongo import models
-
-class Team(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    class Meta:
-        app_label = 'octofit_tracker'
-
-class Activity(models.Model):
-    name = models.CharField(max_length=100)
-    user = models.CharField(max_length=100)
-    team = models.CharField(max_length=100)
-    points = models.IntegerField()
-    class Meta:
-        app_label = 'octofit_tracker'
-
-class Leaderboard(models.Model):
-    team = models.CharField(max_length=100)
-    points = models.IntegerField()
-    class Meta:
-        app_label = 'octofit_tracker'
-
-class Workout(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField()
-    suggested_for = models.CharField(max_length=100)
-    class Meta:
-        app_label = 'octofit_tracker'
+from octofit_tracker.models import User, Team, Activity, Leaderboard, Workout
+from django.utils import timezone
 
 class Command(BaseCommand):
     help = 'Populate the octofit_db database with test data'
 
     def handle(self, *args, **kwargs):
-        User = get_user_model()
         # Eliminar datos previos
-        User.objects.all().delete()
-        Team.objects.all().delete()
         Activity.objects.all().delete()
         Leaderboard.objects.all().delete()
         Workout.objects.all().delete()
-
-        # Crear equipos
-        marvel = Team.objects.create(name='Marvel')
-        dc = Team.objects.create(name='DC')
+        Team.objects.all().delete()
+        User.objects.all().delete()
 
         # Crear usuarios
-        users = [
-            User.objects.create_user(username='spiderman', email='spiderman@marvel.com', password='1234'),
-            User.objects.create_user(username='ironman', email='ironman@marvel.com', password='1234'),
-            User.objects.create_user(username='batman', email='batman@dc.com', password='1234'),
-            User.objects.create_user(username='wonderwoman', email='wonderwoman@dc.com', password='1234'),
-        ]
+        spiderman = User.objects.create(username='spiderman', email='spiderman@marvel.com', first_name='Peter', last_name='Parker')
+        ironman = User.objects.create(username='ironman', email='ironman@marvel.com', first_name='Tony', last_name='Stark')
+        batman = User.objects.create(username='batman', email='batman@dc.com', first_name='Bruce', last_name='Wayne')
+        wonderwoman = User.objects.create(username='wonderwoman', email='wonderwoman@dc.com', first_name='Diana', last_name='Prince')
+
+        # Crear equipos y asignar miembros
+        marvel = Team.objects.create(name='Marvel', members=['spiderman', 'ironman'])
+        dc = Team.objects.create(name='DC', members=['batman', 'wonderwoman'])
 
         # Crear actividades
-        Activity.objects.create(name='Correr', user='spiderman', team='Marvel', points=10)
-        Activity.objects.create(name='Nadar', user='ironman', team='Marvel', points=15)
-        Activity.objects.create(name='Escalar', user='batman', team='DC', points=12)
-        Activity.objects.create(name='Volar', user='wonderwoman', team='DC', points=20)
+        Activity.objects.create(user='spiderman', type='Correr', duration=30, calories=300, date=timezone.now())
+        Activity.objects.create(user='ironman', type='Nadar', duration=45, calories=400, date=timezone.now())
+        Activity.objects.create(user='batman', type='Escalar', duration=25, calories=250, date=timezone.now())
+        Activity.objects.create(user='wonderwoman', type='Volar', duration=60, calories=500, date=timezone.now())
 
         # Crear leaderboard
-        Leaderboard.objects.create(team='Marvel', points=25)
-        Leaderboard.objects.create(team='DC', points=32)
+        Leaderboard.objects.create(team='Marvel', points=700)
+        Leaderboard.objects.create(team='DC', points=750)
 
         # Crear workouts
         Workout.objects.create(name='Entrenamiento Marvel', description='Rutina para héroes Marvel', suggested_for='Marvel')
